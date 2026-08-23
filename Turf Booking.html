@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turf - Match Booking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-[#131314] text-[#e3e3e3] min-h-screen pb-16 font-sans antialiased selection:bg-[#8ab4f8] selection:text-[#041e49]">
+
+  <!-- Header with Custom Messi Logo -->
+  <header class="bg-[#1e1f20]/90 backdrop-blur-md border-b border-[#444746]/40 p-4 sticky top-0 z-20 shadow-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl overflow-hidden border-2 border-[#8ab4f8]/50 shadow-md flex items-center justify-center bg-[#131314] flex-shrink-0">
+          <img src="Messi pp.jfif" alt="Turf Logo" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-[#e3e3e3]">Turf</h1>
+          <p class="text-xs text-[#c4c7c5]">Match Booking & Live Roster</p>
+        </div>
+      </div>
+      <div>
+        <button id="adminToggleBtn" onclick="toggleAdminAuth()" class="flex items-center gap-1.5 text-xs bg-[#282a2c] hover:bg-[#333538] text-[#c4c7c5] hover:text-[#e3e3e3] px-3.5 py-1.5 rounded-xl border border-[#444746]/60 font-medium transition">
+          <i id="adminLockIcon" class="fa-solid fa-lock text-[#8ab4f8]"></i>
+          <span id="adminBtnText">Admin Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- Admin Panel -->
+    <section id="adminPanel" class="hidden bg-[#1e1f20] border-2 border-[#8ab4f8]/40 rounded-2xl p-5 sm:p-6 shadow-xl transition-all">
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-user-gear text-[#8ab4f8] text-sm"></i>
+          <h2 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#8ab4f8]">Organizer Controls</h2>
+        </div>
+        <button onclick="lockAdmin()" class="text-[11px] bg-[#3c1c1c] text-[#f2b8b5] hover:bg-[#4f2323] border border-[#8c1d18]/50 px-2.5 py-1 rounded-md font-medium">
+          <i class="fa-solid fa-lock mr-1"></i> Lock Panel
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-[#c4c7c5] font-medium">Match Date</label>
+            <input id="matchDate" type="date" onchange="updatePricing()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+          </div>
+          <div>
+            <label class="text-xs text-[#c4c7c5] font-medium">Time Slot</label>
+            <input id="matchTimeRange" type="text" value="8:00 PM to 10:00 PM" oninput="updatePricing()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-[#c4c7c5] font-medium">Sport</label>
+            <select id="sportType" onchange="updatePricing()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+              <option value="Cricket">🏏 Cricket</option>
+              <option value="Football">⚽ Football</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-[#c4c7c5] font-medium">Total Player Capacity</label>
+            <input id="playerCapacity" type="number" value="12" min="1" oninput="updatePricing()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-[#c4c7c5] block mb-1.5 font-medium">Fee Setup</label>
+          <div class="grid grid-cols-2 gap-2 bg-[#131314] p-1 rounded-xl border border-[#444746]/50 text-xs">
+            <button id="modeAutoBtn" onclick="setFeeMode('auto')" class="py-2 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] shadow-sm transition">
+              <i class="fa-solid fa-calculator mr-1"></i> Auto-Split Rent
+            </button>
+            <button id="modeManualBtn" onclick="setFeeMode('manual')" class="py-2 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition">
+              <i class="fa-solid fa-pen mr-1"></i> Fixed Per-Head Fee
+            </button>
+          </div>
+        </div>
+
+        <div id="autoFields">
+          <label class="text-xs text-[#c4c7c5] font-medium">Total Turf Rent (₹)</label>
+          <input id="totalCost" type="number" value="2400" oninput="updatePricing()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+        </div>
+        <div id="manualFields" class="hidden">
+          <label class="text-xs text-[#8ab4f8] font-semibold">Per Person Fixed Fee (₹)</label>
+          <input id="customFeeInput" type="number" value="200" oninput="updatePricing()" class="w-full bg-[#131314] border border-[#8ab4f8]/60 rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#8ab4f8] font-bold">
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Form Section -->
+    <section class="bg-[#1e1f20] border border-[#444746]/40 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-hidden space-y-5">
+      
+      <!-- Match Summary Banner -->
+      <div class="flex justify-between items-start border-b border-[#444746]/40 pb-4">
+        <div>
+          <span id="displaySport" class="text-xs font-bold text-[#8ab4f8] uppercase tracking-wider block">🏏 Cricket</span>
+          <p id="displayDate" class="text-sm font-semibold text-[#e3e3e3] mt-0.5">Today</p>
+          <p id="displayTimeRange" class="text-xs text-[#c4c7c5] flex items-center gap-1 mt-0.5">
+            <i class="fa-regular fa-clock text-[#8ab4f8]"></i> 8:00 PM to 10:00 PM
+          </p>
+        </div>
+        <div class="text-right space-y-1">
+          <span class="text-[11px] text-[#c4c7c5] block font-medium uppercase">Confirmed Slots</span>
+          <span id="slotCounterDisplay" class="inline-block bg-[#131314] text-[#8ab4f8] border border-[#8ab4f8]/40 px-3 py-1 rounded-xl text-sm font-mono font-bold">0/12</span>
+        </div>
+      </div>
+
+      <!-- Price Box -->
+      <div class="flex justify-between items-center bg-[#131314] p-3.5 rounded-xl border border-[#444746]/60">
+        <span class="text-xs text-[#c4c7c5] font-medium">Your Share to Pay</span>
+        <span id="perHeadDisplay" class="text-2xl font-black text-[#8ab4f8]">₹200</span>
+      </div>
+
+      <!-- Step 1: Name Input -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-xs text-[#e3e3e3] font-semibold">1. Enter Player Full Name <span class="text-[#f2b8b5]">*</span></label>
+          <span class="text-[10px] text-[#c4c7c5]">First & Last Name required</span>
+        </div>
+        <input id="playerName" type="text" placeholder="e.g. Rohit Sharma" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#8ab4f8] text-sm text-[#e3e3e3]">
+      </div>
+
+      <!-- Step 2: Payment Option Selection -->
+      <div>
+        <label class="text-xs text-[#c4c7c5] font-semibold block mb-1.5">2. Select Payment Mode</label>
+        <div class="grid grid-cols-2 gap-2 bg-[#131314] p-1 rounded-xl border border-[#444746]/50 text-xs">
+          <button id="payModeOnlineBtn" onclick="setPaymentMethod('online')" type="button" class="py-2.5 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] transition shadow-sm">
+            <i class="fa-solid fa-bolt mr-1"></i> Online UPI
+          </button>
+          <button id="payModeCashBtn" onclick="setPaymentMethod('cash')" type="button" class="py-2.5 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition">
+            <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash (+₹10 Fee)
+          </button>
+        </div>
+      </div>
+
+      <!-- Cash Notice -->
+      <div id="cashNotice" class="hidden p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300">
+        <i class="fa-solid fa-circle-info mr-1.5"></i> ₹10 handling fee added. Total to pay at turf: <strong id="cashTotalNotice" class="font-bold">₹210</strong>.
+      </div>
+
+      <!-- Step 3: Action Trigger -->
+      <div class="pt-1">
+        <button id="initiatePayBtn" onclick="openPaymentFlow()" class="w-full flex items-center justify-center gap-2 bg-[#8ab4f8] hover:bg-[#a8c7fa] text-[#041e49] font-bold py-3.5 rounded-xl transition shadow-md text-sm">
+          <i class="fa-solid fa-qrcode"></i> Pay <span id="onlinePayBtnText">₹200</span> via UPI & Request Slot
+        </button>
+
+        <button id="confirmCashBtn" onclick="confirmCashSlot()" class="hidden w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-md text-sm">
+          <i class="fa-solid fa-check"></i> Request Cash Slot (<span id="cashPayBtnText">₹210</span>)
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-[#444746]/40 flex justify-between items-center">
+        <button onclick="shareInviteLink()" class="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-bold py-2.5 rounded-xl text-xs transition shadow-sm">
+          <i class="fa-brands fa-whatsapp text-sm"></i> Share Slot on WhatsApp
+        </button>
+      </div>
+    </section>
+
+    <!-- Modal: Payment QR -->
+    <div id="paymentModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#1e1f20] border border-[#8ab4f8]/40 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl relative">
+        
+        <div class="flex justify-between items-center border-b border-[#444746]/40 pb-3">
+          <div>
+            <h3 class="text-sm font-bold text-[#e3e3e3] uppercase tracking-wider">Scan & Pay via UPI</h3>
+            <p class="text-[11px] text-[#c4c7c5]">Player: <span id="modalPlayerName" class="text-[#8ab4f8] font-bold"></span></p>
+          </div>
+          <button onclick="closePaymentFlow()" class="text-[#c4c7c5] hover:text-[#e3e3e3] text-lg font-bold p-1">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- QR Box -->
+        <div class="flex flex-col items-center justify-center p-3.5 bg-white rounded-2xl mx-auto shadow-inner">
+          <div id="qrcode" class="p-1"></div>
+        </div>
+        <p class="text-center text-xs font-semibold text-[#8ab4f8]">Amount to Pay: <span id="modalAmountDisplay">₹200</span></p>
+
+        <!-- 1-Tap Mobile Pay -->
+        <a id="modalUpiPayLink" href="#" class="w-full flex items-center justify-center gap-2 bg-[#8ab4f8] hover:bg-[#a8c7fa] text-[#041e49] font-bold py-2.5 rounded-xl text-xs transition shadow-md">
+          <i class="fa-solid fa-mobile-screen-button"></i> Open UPI App (GPay/PhonePe/Paytm)
+        </a>
+
+        <!-- Final Confirmation Button -->
+        <div class="pt-2 border-t border-[#444746]/40 space-y-2">
+          <button onclick="submitOnlinePayment()" class="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-xs transition shadow-md">
+            <i class="fa-solid fa-circle-check"></i> I Have Paid - Send for Approval
+          </button>
+          <p class="text-[10px] text-center text-[#c4c7c5]">Organizer will verify the payment before confirming the slot.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Confirmed Squad Roster & Verification Center -->
+    <section class="bg-[#1e1f20] border border-[#444746]/40 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#444746]/40 pb-4">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-[#8ab4f8] flex items-center gap-2">
+            <i class="fa-solid fa-users"></i> Confirmed Squad Roster
+          </h3>
+          <p class="text-xs text-[#c4c7c5] mt-0.5">Slots verified by organizer</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="copyRosterList()" class="text-xs bg-[#282a2c] hover:bg-[#333538] text-[#e3e3e3] px-3 py-1.5 rounded-xl border border-[#444746]/60 font-medium flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-copy text-[#8ab4f8]"></i> Copy Full List
+          </button>
+          <button onclick="resetRoster()" class="text-xs bg-[#3c1c1c] text-[#f2b8b5] hover:bg-[#4f2323] px-3 py-1.5 rounded-xl border border-[#8c1d18]/50 font-medium transition">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="text-[#c4c7c5] border-b border-[#444746]/40 pb-2">
+              <th class="py-2.5 px-3 font-semibold">Slot #</th>
+              <th class="py-2.5 px-3 font-semibold">Player Full Name</th>
+              <th class="py-2.5 px-3 font-semibold">Verification Status</th>
+              <th class="py-2.5 px-3 font-semibold">Fee</th>
+              <th class="py-2.5 px-3 font-semibold">Action</th>
+            </tr>
+          </thead>
+          <tbody id="rosterTableBody" class="divide-y divide-[#444746]/20">
+            <tr id="emptyRosterRow">
+              <td colspan="5" class="py-6 text-center text-[#c4c7c5] italic">No players confirmed yet. Book a slot above!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const ORGANIZER_PHONE = "8369330977";
+    const RECEIVING_UPI_ID = "8369330977@fam";
+    const ADMIN_PIN = "49111981";
+
+    let playersList = JSON.parse(localStorage.getItem('turfRoster') || '[]');
+    let currentPricingMode = 'auto';
+    let selectedPaymentMethod = 'online';
+    let isAdminLoggedIn = false;
+    let validatedPlayerName = "";
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('matchDate').value = new Date().toISOString().split('T')[0];
+      renderRoster();
+      updatePricing();
+    });
+
+    function toggleAdminAuth() {
+      if (isAdminLoggedIn) {
+        lockAdmin();
+      } else {
+        const pin = prompt("Enter Organizer PIN to edit match settings & verify payments:");
+        if (pin === ADMIN_PIN) {
+          isAdminLoggedIn = true;
+          document.getElementById('adminPanel').classList.remove('hidden');
+          document.getElementById('adminLockIcon').className = "fa-solid fa-unlock text-[#8ab4f8]";
+          document.getElementById('adminBtnText').innerText = "Admin Unlocked";
+          renderRoster();
+        } else if (pin !== null) {
+          alert("Incorrect PIN!");
+        }
+      }
+    }
+
+    function lockAdmin() {
+      isAdminLoggedIn = false;
+      document.getElementById('adminPanel').classList.add('hidden');
+      document.getElementById('adminLockIcon').className = "fa-solid fa-lock text-[#8ab4f8]";
+      document.getElementById('adminBtnText').innerText = "Admin Settings";
+      renderRoster();
+    }
+
+    function setFeeMode(mode) {
+      currentPricingMode = mode;
+      document.getElementById('autoFields').classList.toggle('hidden', mode !== 'auto');
+      document.getElementById('manualFields').classList.toggle('hidden', mode === 'auto');
+      document.getElementById('modeAutoBtn').className = mode === 'auto' ? "py-2 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] shadow-sm transition" : "py-2 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition";
+      document.getElementById('modeManualBtn').className = mode === 'manual' ? "py-2 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] shadow-sm transition" : "py-2 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition";
+      updatePricing();
+    }
+
+    function setPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      const isCash = method === 'cash';
+
+      document.getElementById('cashNotice').classList.toggle('hidden', !isCash);
+      document.getElementById('initiatePayBtn').classList.toggle('hidden', isCash);
+      document.getElementById('confirmCashBtn').classList.toggle('hidden', !isCash);
+
+      document.getElementById('payModeOnlineBtn').className = !isCash ? "py-2.5 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] transition shadow-sm" : "py-2.5 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition";
+      document.getElementById('payModeCashBtn').className = isCash ? "py-2.5 rounded-lg font-semibold bg-amber-500 text-slate-950 transition shadow-sm" : "py-2.5 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition";
+
+      updatePricing();
+    }
+
+    function getBaseFee() {
+      const totalSlots = parseInt(document.getElementById('playerCapacity').value) || 12;
+      if (currentPricingMode === 'auto') {
+        return Math.ceil((parseFloat(document.getElementById('totalCost').value) || 0) / totalSlots);
+      }
+      return parseFloat(document.getElementById('customFeeInput').value) || 0;
+    }
+
+    function getConfirmedCount() {
+      return playersList.filter(p => p.status === 'confirmed').length;
+    }
+
+    function updatePricing() {
+      const sport = document.getElementById('sportType').value;
+      const dateVal = document.getElementById('matchDate').value;
+      const timeRange = document.getElementById('matchTimeRange').value || "8:00 PM to 10:00 PM";
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+      const baseFee = getBaseFee();
+      const cashFee = baseFee + 10;
+      const confirmedCount = getConfirmedCount();
+
+      let formattedDate = "Today";
+      if (dateVal) {
+        const d = new Date(dateVal);
+        formattedDate = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      document.getElementById('displaySport').innerText = sport === 'Cricket' ? '🏏 Cricket' : '⚽ Football';
+      document.getElementById('displayDate').innerText = formattedDate;
+      document.getElementById('displayTimeRange').innerHTML = `<i class="fa-regular fa-clock text-[#8ab4f8]"></i> ${timeRange}`;
+      document.getElementById('slotCounterDisplay').innerText = `${confirmedCount}/${totalCapacity}`;
+      document.getElementById('perHeadDisplay').innerText = selectedPaymentMethod === 'cash' ? `₹${cashFee}` : `₹${baseFee}`;
+      document.getElementById('onlinePayBtnText').innerText = `₹${baseFee}`;
+      document.getElementById('cashPayBtnText').innerText = `₹${cashFee}`;
+      document.getElementById('cashTotalNotice').innerText = `₹${cashFee}`;
+    }
+
+    function validateName() {
+      const nameInput = document.getElementById('playerName');
+      const rawName = nameInput.value.trim();
+      const nameParts = rawName.split(/\s+/);
+
+      if (!rawName || nameParts.length < 2 || nameParts[0].length < 2 || nameParts[1].length < 2) {
+        alert('Full Name is COMPULSORY!\nPlease enter both First and Last Name (e.g. Rohit Sharma).');
+        nameInput.focus();
+        return false;
+      }
+      validatedPlayerName = rawName;
+      return true;
+    }
+
+    function openPaymentFlow() {
+      if (!validateName()) return;
+
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+      if (getConfirmedCount() >= totalCapacity) {
+        alert('All slots are officially confirmed & full!');
+        return;
+      }
+
+      const baseFee = getBaseFee();
+      const sport = document.getElementById('sportType').value;
+      const note = encodeURIComponent(`${sport} Turf Slot - ${validatedPlayerName}`);
+      const upiUri = `upi://pay?pa=${RECEIVING_UPI_ID}&pn=TurfOrganizer&am=${baseFee}&cu=INR&tn=${note}`;
+
+      document.getElementById('modalPlayerName').innerText = validatedPlayerName;
+      document.getElementById('modalAmountDisplay').innerText = `₹${baseFee}`;
+      document.getElementById('modalUpiPayLink').setAttribute('href', upiUri);
+
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, { text: upiUri, width: 140, height: 140, colorDark: "#131314", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closePaymentFlow() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function submitOnlinePayment() {
+      const baseFee = getBaseFee();
+      finalizeBooking({
+        id: Date.now(),
+        name: validatedPlayerName,
+        paymentMethod: 'Online UPI',
+        amount: `₹${baseFee}`,
+        status: 'pending' // Marked pending until organizer confirms payment in bank
+      });
+
+      closePaymentFlow();
+      alert('Your payment is submitted for verification!\n\nOrganizer is checking the bank/UPI notification. Once received, your slot will be officially confirmed.');
+    }
+
+    function confirmCashSlot() {
+      if (!validateName()) return;
+
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+      if (getConfirmedCount() >= totalCapacity) {
+        alert('All slots are already full!');
+        return;
+      }
+
+      const cashFee = getBaseFee() + 10;
+      finalizeBooking({
+        id: Date.now(),
+        name: validatedPlayerName,
+        paymentMethod: 'Cash',
+        amount: `₹${cashFee}`,
+        status: 'confirmed'
+      });
+    }
+
+    function finalizeBooking(bookingData) {
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+      const sport = document.getElementById('sportType').value;
+      const dateVal = document.getElementById('displayDate').innerText;
+      const timeRange = document.getElementById('matchTimeRange').value;
+      const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      bookingData.timestamp = timeNow;
+      playersList.push(bookingData);
+      localStorage.setItem('turfRoster', JSON.stringify(playersList));
+
+      document.getElementById('playerName').value = '';
+      renderRoster();
+      updatePricing();
+
+      // Instant WhatsApp Booking Alert to Organizer
+      const bookingMsg = `*🏏 NEW TURF BOOKING REQUEST*\n\n` +
+        `👤 *Player Name:* ${bookingData.name}\n` +
+        `🏆 *Sport:* ${sport}\n` +
+        `📅 *Date:* ${dateVal}\n` +
+        `🕒 *Slot:* ${timeRange}\n` +
+        `💳 *Payment:* ${bookingData.paymentMethod} (${bookingData.amount})\n` +
+        `📌 *Status:* ${bookingData.status === 'pending' ? '⏳ PENDING ORGANIZER APPROVAL' : '✅ CONFIRMED (Cash)'}\n\n` +
+        `_Check your UPI app to verify payment and approve the slot._`;
+
+      const whatsappUrl = `https://wa.me/91${ORGANIZER_PHONE}?text=${encodeURIComponent(bookingMsg)}`;
+      window.open(whatsappUrl, '_blank');
+    }
+
+    function approvePlayer(id) {
+      const player = playersList.find(p => p.id === id);
+      if (player) {
+        player.status = 'confirmed';
+        localStorage.setItem('turfRoster', JSON.stringify(playersList));
+        renderRoster();
+        updatePricing();
+      }
+    }
+
+    function rejectPlayer(id) {
+      if (confirm('Did not receive payment? Remove this booking request?')) {
+        playersList = playersList.filter(p => p.id !== id);
+        localStorage.setItem('turfRoster', JSON.stringify(playersList));
+        renderRoster();
+        updatePricing();
+      }
+    }
+
+    function renderRoster() {
+      const tbody = document.getElementById('rosterTableBody');
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+      const confirmedCount = getConfirmedCount();
+      document.getElementById('slotCounterDisplay').innerText = `${confirmedCount}/${totalCapacity}`;
+
+      if (playersList.length === 0) {
+        tbody.innerHTML = `<tr id="emptyRosterRow"><td colspan="5" class="py-6 text-center text-[#c4c7c5] italic">No players confirmed yet. Book a slot above!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = playersList.map((player, index) => {
+        const isConfirmed = player.status === 'confirmed';
+
+        let badge = '';
+        if (isConfirmed) {
+          badge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] font-semibold"><i class="fa-solid fa-circle-check mr-1"></i> Confirmed & Paid</span>`;
+        } else {
+          badge = `<span class="bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold animate-pulse"><i class="fa-solid fa-hourglass-half mr-1"></i> Payment Verifying</span>`;
+        }
+
+        // Action Buttons for Organizer
+        let actionBtn = `<span class="text-[#c4c7c5] text-[10px]">${player.timestamp}</span>`;
+        if (isAdminLoggedIn) {
+          if (!isConfirmed) {
+            actionBtn = `
+              <div class="flex items-center gap-1.5">
+                <button onclick="approvePlayer(${player.id})" title="Approve Payment" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[11px] font-bold transition">
+                  <i class="fa-solid fa-check"></i> Approve
+                </button>
+                <button onclick="rejectPlayer(${player.id})" title="Reject Fake Booking" class="bg-rose-600 hover:bg-rose-500 text-white px-2 py-1 rounded text-[11px] font-bold transition">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>`;
+          } else {
+            actionBtn = `
+              <button onclick="rejectPlayer(${player.id})" title="Remove Slot" class="text-rose-400 hover:text-rose-300 text-[11px] transition">
+                <i class="fa-solid fa-trash"></i>
+              </button>`;
+          }
+        }
+
+        return `
+          <tr class="hover:bg-[#282a2c]/40 transition">
+            <td class="py-3 px-3 font-mono font-bold ${isConfirmed ? 'text-[#8ab4f8]' : 'text-[#c4c7c5]'}">${isConfirmed ? '#' + (index + 1) : '⏳'}</td>
+            <td class="py-3 px-3 font-semibold text-[#e3e3e3]">${player.name}</td>
+            <td class="py-3 px-3">${badge}</td>
+            <td class="py-3 px-3 font-mono text-[#e3e3e3]">${player.amount} (${player.paymentMethod})</td>
+            <td class="py-3 px-3">${actionBtn}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function copyRosterList() {
+      const confirmedPlayers = playersList.filter(p => p.status === 'confirmed');
+      if (confirmedPlayers.length === 0) {
+        alert("There are no confirmed players on the roster yet!");
+        return;
+      }
+
+      const sport = document.getElementById('sportType').value;
+      const dateVal = document.getElementById('displayDate').innerText;
+      const timeRange = document.getElementById('matchTimeRange').value;
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+
+      let rosterText = `*📋 ${sport} Confirmed Squad (${confirmedPlayers.length}/${totalCapacity})*\n`;
+      rosterText += `📅 Date: ${dateVal} | 🕒 Slot: ${timeRange}\n\n`;
+
+      confirmedPlayers.forEach((p, i) => {
+        rosterText += `${i + 1}. ${p.name} - ${p.amount} (${p.paymentMethod})\n`;
+      });
+
+      navigator.clipboard.writeText(rosterText).then(() => {
+        alert("Confirmed squad list copied to clipboard! You can paste it into WhatsApp.");
+      });
+    }
+
+    function resetRoster() {
+      const pin = prompt("Enter Organizer PIN to clear the squad roster:");
+      if (pin === ADMIN_PIN) {
+        playersList = [];
+        localStorage.removeItem('turfRoster');
+        renderRoster();
+        updatePricing();
+        alert("Roster has been reset.");
+      } else if (pin !== null) {
+        alert("Incorrect PIN!");
+      }
+    }
+
+    function shareInviteLink() {
+      const sport = document.getElementById('sportType').value;
+      const dateVal = document.getElementById('displayDate').innerText;
+      const timeRange = document.getElementById('matchTimeRange').value;
+      const baseFee = getBaseFee();
+      const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
+      const confirmedCount = getConfirmedCount();
+
+      let msg = `*${sport} Turf Booking*\n📅 *Date:* ${dateVal}\n🕒 *Slot:* ${timeRange}\n👥 *Slots Booked:* ${confirmedCount}/${totalCapacity}\n💰 *Online UPI:* ₹${baseFee} | *Cash:* ₹${baseFee + 10}\n\n_Book your slot now to confirm._`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  </script>
+</body>
+</html>
