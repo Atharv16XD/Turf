@@ -7,9 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Firebase Realtime Cloud SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="bg-[#131314] text-[#e3e3e3] min-h-screen pb-16 font-sans antialiased selection:bg-[#8ab4f8] selection:text-[#041e49]">
 
@@ -22,7 +19,9 @@
         </div>
         <div>
           <h1 class="text-base sm:text-lg font-bold tracking-tight text-[#e3e3e3]">Turf</h1>
-          <p class="text-xs text-[#c4c7c5]">Match Booking & Live Roster</p>
+          <p class="text-xs text-emerald-400 flex items-center gap-1.5 font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Cloud Sync Active
+          </p>
         </div>
       </div>
       <div>
@@ -53,25 +52,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="text-xs text-[#c4c7c5] font-medium">Match Date</label>
-            <input id="matchDate" type="date" onchange="updateSettingsInCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+            <input id="matchDate" type="date" onchange="syncSettingsToCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
           </div>
           <div>
             <label class="text-xs text-[#c4c7c5] font-medium">Time Slot</label>
-            <input id="matchTimeRange" type="text" value="8:00 PM to 10:00 PM" oninput="updateSettingsInCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+            <input id="matchTimeRange" type="text" value="8:00 PM to 10:00 PM" oninput="syncSettingsToCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="text-xs text-[#c4c7c5] font-medium">Sport</label>
-            <select id="sportType" onchange="updateSettingsInCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+            <select id="sportType" onchange="syncSettingsToCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
               <option value="Cricket">🏏 Cricket</option>
               <option value="Football">⚽ Football</option>
             </select>
           </div>
           <div>
             <label class="text-xs text-[#c4c7c5] font-medium">Total Player Capacity</label>
-            <input id="playerCapacity" type="number" value="12" min="1" oninput="updateSettingsInCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+            <input id="playerCapacity" type="number" value="12" min="1" oninput="syncSettingsToCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
           </div>
         </div>
 
@@ -89,11 +88,11 @@
 
         <div id="autoFields">
           <label class="text-xs text-[#c4c7c5] font-medium">Total Turf Rent (₹)</label>
-          <input id="totalCost" type="number" value="2400" oninput="updateSettingsInCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
+          <input id="totalCost" type="number" value="2400" oninput="syncSettingsToCloud()" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#e3e3e3]">
         </div>
         <div id="manualFields" class="hidden">
           <label class="text-xs text-[#8ab4f8] font-semibold">Per Person Fixed Fee (₹)</label>
-          <input id="customFeeInput" type="number" value="200" oninput="updateSettingsInCloud()" class="w-full bg-[#131314] border border-[#8ab4f8]/60 rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#8ab4f8] font-bold">
+          <input id="customFeeInput" type="number" value="200" oninput="syncSettingsToCloud()" class="w-full bg-[#131314] border border-[#8ab4f8]/60 rounded-xl px-3.5 py-2.5 mt-1 focus:outline-none focus:border-[#8ab4f8] text-[#8ab4f8] font-bold">
         </div>
       </div>
     </section>
@@ -101,7 +100,6 @@
     <!-- Booking Form Section -->
     <section class="bg-[#1e1f20] border border-[#444746]/40 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-hidden space-y-5">
       
-      <!-- Match Summary Banner -->
       <div class="flex justify-between items-start border-b border-[#444746]/40 pb-4">
         <div>
           <span id="displaySport" class="text-xs font-bold text-[#8ab4f8] uppercase tracking-wider block">🏏 Cricket</span>
@@ -116,13 +114,11 @@
         </div>
       </div>
 
-      <!-- Price Box -->
       <div class="flex justify-between items-center bg-[#131314] p-3.5 rounded-xl border border-[#444746]/60">
         <span class="text-xs text-[#c4c7c5] font-medium">Your Share to Pay</span>
         <span id="perHeadDisplay" class="text-2xl font-black text-[#8ab4f8]">₹200</span>
       </div>
 
-      <!-- Step 1: Name Input -->
       <div>
         <div class="flex justify-between items-center mb-1">
           <label class="text-xs text-[#e3e3e3] font-semibold">1. Enter Player Full Name <span class="text-[#f2b8b5]">*</span></label>
@@ -131,7 +127,6 @@
         <input id="playerName" type="text" placeholder="e.g. Rohit Sharma" class="w-full bg-[#131314] border border-[#444746] rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#8ab4f8] text-sm text-[#e3e3e3]">
       </div>
 
-      <!-- Step 2: Payment Option Selection -->
       <div>
         <label class="text-xs text-[#c4c7c5] font-semibold block mb-1.5">2. Select Payment Mode</label>
         <div class="grid grid-cols-2 gap-2 bg-[#131314] p-1 rounded-xl border border-[#444746]/50 text-xs">
@@ -144,12 +139,10 @@
         </div>
       </div>
 
-      <!-- Cash Notice -->
       <div id="cashNotice" class="hidden p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300">
         <i class="fa-solid fa-circle-info mr-1.5"></i> ₹10 handling fee added. Total to pay at turf: <strong id="cashTotalNotice" class="font-bold">₹210</strong>.
       </div>
 
-      <!-- Step 3: Action Trigger -->
       <div class="pt-1">
         <button id="initiatePayBtn" onclick="openPaymentFlow()" class="w-full flex items-center justify-center gap-2 bg-[#8ab4f8] hover:bg-[#a8c7fa] text-[#041e49] font-bold py-3.5 rounded-xl transition shadow-md text-sm">
           <i class="fa-solid fa-qrcode"></i> Pay <span id="onlinePayBtnText">₹200</span> via UPI & Request Slot
@@ -205,7 +198,7 @@
           <h3 class="text-sm font-bold uppercase tracking-wider text-[#8ab4f8] flex items-center gap-2">
             <i class="fa-solid fa-users"></i> Confirmed Squad Roster
           </h3>
-          <p class="text-xs text-[#c4c7c5] mt-0.5">Live syncing across all devices</p>
+          <p class="text-xs text-[#c4c7c5] mt-0.5">Live real-time sync across all phones</p>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="copyRosterList()" class="text-xs bg-[#282a2c] hover:bg-[#333538] text-[#e3e3e3] px-3 py-1.5 rounded-xl border border-[#444746]/60 font-medium flex items-center gap-1.5 transition">
@@ -230,7 +223,7 @@
           </thead>
           <tbody id="rosterTableBody" class="divide-y divide-[#444746]/20">
             <tr id="emptyRosterRow">
-              <td colspan="5" class="py-6 text-center text-[#c4c7c5] italic">Connecting to live match database...</td>
+              <td colspan="5" class="py-6 text-center text-[#c4c7c5] italic">Loading live roster...</td>
             </tr>
           </tbody>
         </table>
@@ -240,9 +233,7 @@
   </main>
 
   <script>
-    // Configured Firebase Realtime Database
-    const FIREBASE_DB_URL = "https://turf-booking-22ea0-default-rtdb.firebaseio.com/";
-    
+    const FIREBASE_ENDPOINT = "https://turf-booking-22ea0-default-rtdb.firebaseio.com";
     const ORGANIZER_PHONE = "8369330977";
     const RECEIVING_UPI_ID = "8369330977@fam";
     const ADMIN_PIN = "49111981";
@@ -253,40 +244,50 @@
     let isAdminLoggedIn = false;
     let validatedPlayerName = "";
 
-    // Initialize Firebase
-    firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
-    const db = firebase.database();
-
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('matchDate').value = new Date().toISOString().split('T')[0];
-
-      // Live listener for real-time roster updates across all devices
-      db.ref('roster').on('value', (snapshot) => {
-        const data = snapshot.val();
-        playersList = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-        renderRoster();
-        updatePricing();
-      });
-
-      // Live listener for organizer match settings updates
-      db.ref('settings').on('value', (snapshot) => {
-        const s = snapshot.val();
-        if (s) {
-          if (s.date) document.getElementById('matchDate').value = s.date;
-          if (s.time) document.getElementById('matchTimeRange').value = s.time;
-          if (s.sport) document.getElementById('sportType').value = s.sport;
-          if (s.capacity) document.getElementById('playerCapacity').value = s.capacity;
-          if (s.totalCost) document.getElementById('totalCost').value = s.totalCost;
-          if (s.customFee) document.getElementById('customFeeInput').value = s.customFee;
-          if (s.mode) setFeeMode(s.mode, false);
-          updatePricing();
-        }
-      });
+      
+      // Real-time Cloud Polling Engine (Every 2 seconds)
+      fetchCloudData();
+      setInterval(fetchCloudData, 2000);
     });
 
-    function updateSettingsInCloud() {
+    async function fetchCloudData() {
+      try {
+        const [rosterRes, settingsRes] = await Promise.all([
+          fetch(`${FIREBASE_ENDPOINT}/roster.json`),
+          fetch(`${FIREBASE_ENDPOINT}/settings.json`)
+        ]);
+
+        const rosterData = await rosterRes.json();
+        const settingsData = await settingsRes.json();
+
+        if (rosterData) {
+          playersList = Object.keys(rosterData).map(key => ({ id: key, ...rosterData[key] }));
+        } else {
+          playersList = [];
+        }
+
+        if (settingsData && !isAdminLoggedIn) {
+          if (settingsData.date) document.getElementById('matchDate').value = settingsData.date;
+          if (settingsData.time) document.getElementById('matchTimeRange').value = settingsData.time;
+          if (settingsData.sport) document.getElementById('sportType').value = settingsData.sport;
+          if (settingsData.capacity) document.getElementById('playerCapacity').value = settingsData.capacity;
+          if (settingsData.totalCost) document.getElementById('totalCost').value = settingsData.totalCost;
+          if (settingsData.customFee) document.getElementById('customFeeInput').value = settingsData.customFee;
+          if (settingsData.mode) setFeeMode(settingsData.mode, false);
+        }
+
+        renderRoster();
+        updatePricing();
+      } catch (err) {
+        console.error("Cloud fetch error:", err);
+      }
+    }
+
+    async function syncSettingsToCloud() {
       if (!isAdminLoggedIn) return;
-      db.ref('settings').set({
+      const settingsPayload = {
         date: document.getElementById('matchDate').value,
         time: document.getElementById('matchTimeRange').value,
         sport: document.getElementById('sportType').value,
@@ -294,7 +295,12 @@
         totalCost: parseFloat(document.getElementById('totalCost').value) || 2400,
         customFee: parseFloat(document.getElementById('customFeeInput').value) || 200,
         mode: currentPricingMode
+      };
+      await fetch(`${FIREBASE_ENDPOINT}/settings.json`, {
+        method: 'PUT',
+        body: JSON.stringify(settingsPayload)
       });
+      updatePricing();
     }
 
     function toggleAdminAuth() {
@@ -328,7 +334,7 @@
       document.getElementById('manualFields').classList.toggle('hidden', mode === 'auto');
       document.getElementById('modeAutoBtn').className = mode === 'auto' ? "py-2 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] shadow-sm transition" : "py-2 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition";
       document.getElementById('modeManualBtn').className = mode === 'manual' ? "py-2 rounded-lg font-semibold bg-[#8ab4f8] text-[#041e49] shadow-sm transition" : "py-2 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition";
-      if (sync) updateSettingsInCloud();
+      if (sync) syncSettingsToCloud();
       updatePricing();
     }
 
@@ -436,7 +442,7 @@
       });
 
       closePaymentFlow();
-      alert('Your payment is submitted for verification!\n\nOrganizer will check the UPI receipt and officially approve your slot.');
+      alert('Your payment is submitted for verification!\n\nOrganizer will check the bank/UPI notification and officially approve your slot.');
     }
 
     function confirmCashSlot() {
@@ -457,7 +463,7 @@
       });
     }
 
-    function finalizeBooking(bookingData) {
+    async function finalizeBooking(bookingData) {
       const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
       const sport = document.getElementById('sportType').value;
       const dateVal = document.getElementById('displayDate').innerText;
@@ -466,12 +472,16 @@
 
       bookingData.timestamp = timeNow;
 
-      // Realtime push to Firebase cloud database
-      db.ref('roster').push(bookingData);
+      // Push to Cloud Database via REST
+      await fetch(`${FIREBASE_ENDPOINT}/roster.json`, {
+        method: 'POST',
+        body: JSON.stringify(bookingData)
+      });
 
       document.getElementById('playerName').value = '';
+      fetchCloudData();
 
-      // Send WhatsApp Notification to Organizer
+      // Open WhatsApp Alert
       const bookingMsg = `*🏏 NEW TURF BOOKING REQUEST*\n\n` +
         `👤 *Player Name:* ${bookingData.name}\n` +
         `🏆 *Sport:* ${sport}\n` +
@@ -485,13 +495,20 @@
       window.open(whatsappUrl, '_blank');
     }
 
-    function approvePlayer(id) {
-      db.ref(`roster/${id}/status`).set('confirmed');
+    async function approvePlayer(id) {
+      await fetch(`${FIREBASE_ENDPOINT}/roster/${id}/status.json`, {
+        method: 'PUT',
+        body: JSON.stringify('confirmed')
+      });
+      fetchCloudData();
     }
 
-    function rejectPlayer(id) {
+    async function rejectPlayer(id) {
       if (confirm('Did not receive payment? Remove this booking request?')) {
-        db.ref(`roster/${id}`).remove();
+        await fetch(`${FIREBASE_ENDPOINT}/roster/${id}.json`, {
+          method: 'DELETE'
+        });
+        fetchCloudData();
       }
     }
 
@@ -569,10 +586,11 @@
       });
     }
 
-    function resetRoster() {
+    async function resetRoster() {
       const pin = prompt("Enter Organizer PIN to clear the squad roster:");
       if (pin === ADMIN_PIN) {
-        db.ref('roster').remove();
+        await fetch(`${FIREBASE_ENDPOINT}/roster.json`, { method: 'DELETE' });
+        fetchCloudData();
         alert("Roster has been reset across all devices.");
       } else if (pin !== null) {
         alert("Incorrect PIN!");
