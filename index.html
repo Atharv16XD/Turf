@@ -134,13 +134,13 @@
             <i class="fa-solid fa-bolt mr-1"></i> Online UPI
           </button>
           <button id="payModeCashBtn" onclick="setPaymentMethod('cash')" type="button" class="py-2.5 rounded-lg font-semibold text-[#c4c7c5] hover:text-[#e3e3e3] transition">
-            <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash (+₹10 Fee)
+            <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash at Turf
           </button>
         </div>
       </div>
 
-      <div id="cashNotice" class="hidden p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300">
-        <i class="fa-solid fa-circle-info mr-1.5"></i> ₹10 handling fee added. Total to pay at turf: <strong id="cashTotalNotice" class="font-bold">₹210</strong>.
+      <div id="cashNotice" class="hidden p-3.5 bg-[#8ab4f8]/10 border border-[#8ab4f8]/30 rounded-xl text-xs text-[#8ab4f8]">
+        <i class="fa-solid fa-circle-info mr-1.5"></i> Slot request will be sent to organizer for approval. Pay <strong id="cashTotalNotice" class="font-bold">₹200</strong> in cash at the venue.
       </div>
 
       <div class="pt-1">
@@ -149,7 +149,7 @@
         </button>
 
         <button id="confirmCashBtn" onclick="confirmCashSlot()" class="hidden w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-md text-sm">
-          <i class="fa-solid fa-check"></i> Request Cash Slot (<span id="cashPayBtnText">₹210</span>)
+          <i class="fa-solid fa-money-bill-wave"></i> Request Cash Slot (<span id="cashPayBtnText">₹200</span>)
         </button>
       </div>
 
@@ -217,7 +217,7 @@
               <th class="py-2.5 px-3 font-semibold">Slot #</th>
               <th class="py-2.5 px-3 font-semibold">Player Full Name</th>
               <th class="py-2.5 px-3 font-semibold">Verification Status</th>
-              <th class="py-2.5 px-3 font-semibold">Fee</th>
+              <th class="py-2.5 px-3 font-semibold">Fee & Mode</th>
               <th class="py-2.5 px-3 font-semibold">Action</th>
             </tr>
           </thead>
@@ -370,7 +370,6 @@
       const timeRange = document.getElementById('matchTimeRange').value || "8:00 PM to 10:00 PM";
       const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
       const baseFee = getBaseFee();
-      const cashFee = baseFee + 10;
       const confirmedCount = getConfirmedCount();
 
       let formattedDate = "Today";
@@ -383,10 +382,10 @@
       document.getElementById('displayDate').innerText = formattedDate;
       document.getElementById('displayTimeRange').innerHTML = `<i class="fa-regular fa-clock text-[#8ab4f8]"></i> ${timeRange}`;
       document.getElementById('slotCounterDisplay').innerText = `${confirmedCount}/${totalCapacity}`;
-      document.getElementById('perHeadDisplay').innerText = selectedPaymentMethod === 'cash' ? `₹${cashFee}` : `₹${baseFee}`;
+      document.getElementById('perHeadDisplay').innerText = `₹${baseFee}`;
       document.getElementById('onlinePayBtnText').innerText = `₹${baseFee}`;
-      document.getElementById('cashPayBtnText').innerText = `₹${cashFee}`;
-      document.getElementById('cashTotalNotice').innerText = `₹${cashFee}`;
+      document.getElementById('cashPayBtnText').innerText = `₹${baseFee}`;
+      document.getElementById('cashTotalNotice').innerText = `₹${baseFee}`;
     }
 
     function validateName() {
@@ -454,13 +453,15 @@
         return;
       }
 
-      const cashFee = getBaseFee() + 10;
+      const baseFee = getBaseFee();
       finalizeBooking({
         name: validatedPlayerName,
         paymentMethod: 'Cash',
-        amount: `₹${cashFee}`,
-        status: 'confirmed'
+        amount: `₹${baseFee}`,
+        status: 'pending' // Marked pending until approved by organizer
       });
+
+      alert('Your cash booking request has been sent for approval!\n\nOrganizer will confirm your slot.');
     }
 
     async function finalizeBooking(bookingData) {
@@ -487,9 +488,9 @@
         `🏆 *Sport:* ${sport}\n` +
         `📅 *Date:* ${dateVal}\n` +
         `🕒 *Slot:* ${timeRange}\n` +
-        `💳 *Payment:* ${bookingData.paymentMethod} (${bookingData.amount})\n` +
-        `📌 *Status:* ${bookingData.status === 'pending' ? '⏳ PENDING ORGANIZER APPROVAL' : '✅ CONFIRMED (Cash)'}\n\n` +
-        `_Check your UPI app to verify payment and approve the slot._`;
+        `💳 *Payment Mode:* ${bookingData.paymentMethod} (${bookingData.amount})\n` +
+        `📌 *Status:* ⏳ PENDING ORGANIZER APPROVAL\n\n` +
+        `_Open Admin Settings on the app to approve or reject this slot._`;
 
       const whatsappUrl = `https://wa.me/91${ORGANIZER_PHONE}?text=${encodeURIComponent(bookingMsg)}`;
       window.open(whatsappUrl, '_blank');
@@ -504,7 +505,7 @@
     }
 
     async function rejectPlayer(id) {
-      if (confirm('Did not receive payment? Remove this booking request?')) {
+      if (confirm('Remove this booking request?')) {
         await fetch(`${FIREBASE_ENDPOINT}/roster/${id}.json`, {
           method: 'DELETE'
         });
@@ -527,15 +528,15 @@
         const isConfirmed = player.status === 'confirmed';
 
         let badge = isConfirmed 
-          ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] font-semibold"><i class="fa-solid fa-circle-check mr-1"></i> Confirmed & Paid</span>`
-          : `<span class="bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold animate-pulse"><i class="fa-solid fa-hourglass-half mr-1"></i> Payment Verifying</span>`;
+          ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] font-semibold"><i class="fa-solid fa-circle-check mr-1"></i> Confirmed & Approved</span>`
+          : `<span class="bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold animate-pulse"><i class="fa-solid fa-hourglass-half mr-1"></i> Verification Pending</span>`;
 
         let actionBtn = `<span class="text-[#c4c7c5] text-[10px]">${player.timestamp}</span>`;
         if (isAdminLoggedIn) {
           if (!isConfirmed) {
             actionBtn = `
               <div class="flex items-center gap-1.5">
-                <button onclick="approvePlayer('${player.id}')" title="Approve Payment" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[11px] font-bold transition">
+                <button onclick="approvePlayer('${player.id}')" title="Approve Slot" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[11px] font-bold transition">
                   <i class="fa-solid fa-check"></i> Approve
                 </button>
                 <button onclick="rejectPlayer('${player.id}')" title="Reject Booking" class="bg-rose-600 hover:bg-rose-500 text-white px-2 py-1 rounded text-[11px] font-bold transition">
@@ -605,7 +606,7 @@
       const totalCapacity = parseInt(document.getElementById('playerCapacity').value) || 12;
       const confirmedCount = getConfirmedCount();
 
-      let msg = `*${sport} Turf Booking*\n📅 *Date:* ${dateVal}\n🕒 *Slot:* ${timeRange}\n👥 *Slots Booked:* ${confirmedCount}/${totalCapacity}\n💰 *Online UPI:* ₹${baseFee} | *Cash:* ₹${baseFee + 10}\n\n_Book your slot here:_ ${window.location.href}`;
+      let msg = `*${sport} Turf Booking*\n📅 *Date:* ${dateVal}\n🕒 *Slot:* ${timeRange}\n👥 *Slots Booked:* ${confirmedCount}/${totalCapacity}\n💰 *Fee:* ₹${baseFee} (Online / Cash)\n\n_Book your slot here:_ ${window.location.href}`;
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     }
   </script>
